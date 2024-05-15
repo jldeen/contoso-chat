@@ -101,3 +101,4 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "🔗 [View Resources Deployed Here](${{ steps.deep_link.outputs.deep_link }})" >> $GITHUB_STEP_SUMMARY
+          echo "🏕️ [View Contoso Web Here](https://contosoweb.jessicadeen.com)" >> $GITHUB_STEP_SUMMARY
