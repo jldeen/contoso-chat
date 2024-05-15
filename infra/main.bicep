@@ -22,7 +22,6 @@ param aiResourceGroupName string = ''
 param aiProjectName string = ''
 param aiHubName string = ''
 param logAnalyticsName string = ''
-
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 param principalType string = 'User'
@@ -60,6 +59,7 @@ module cosmos 'core/database/cosmos/sql/cosmos-sql-db.bicep' = {
       }
     )
     keyVaultName: ai.outputs.keyVaultName
+    aiServicePrincipalId: ai.outputs.projectPrincipalId
     containers: [
       {
         name: 'customers'
@@ -106,6 +106,8 @@ module machineLearningEndpoint './core/host/ml-online-endpoint.bicep' = {
     aiHubName: ai.outputs.hubName
     aiProjectName: ai.outputs.projectName
     keyVaultName: ai.outputs.keyVaultName
+    roleDefinitionId: cosmos.outputs.roleDefinitionId
+    accountName: cosmos.outputs.accountName
   }
 }
 
@@ -139,6 +141,26 @@ module userAcrRolePull 'core/security/role.bicep' = {
   }
 }
 
+module openaiRoleUser 'core/security/role.bicep' = if (!empty(principalId)) {
+  scope: rg
+  name: 'openai-role-user'
+  params: {
+    principalId: principalId
+    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' //Cognitive Services OpenAI User
+    principalType: principalType
+  }
+}
+
+module openaiRoleBackend 'core/security/role.bicep' = {
+  scope: rg
+  name: 'openai-role-backend'
+  params: {
+    principalId: principalId
+    roleDefinitionId: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' //Cognitive Services OpenAI User
+    principalType: principalType
+  }
+}
+
 module userRoleDataScientist 'core/security/role.bicep' = {
   name: 'user-role-data-scientist'
   scope: rg
@@ -158,6 +180,67 @@ module userRoleSecretsReader 'core/security/role.bicep' = {
     principalType: principalType
   }
 }
+
+module userAiSearchRole 'core/security/role.bicep' = if (!empty(principalId)) {
+  scope: rg
+  name: 'user-ai-search-index-data-contributor'
+  params: {
+    principalId: principalId
+    roleDefinitionId: '8ebe5a00-799e-43f5-93ac-243d3dce84a7' //Search Index Data Contributor
+    principalType: principalType
+  }
+}
+
+module aiSearchRole 'core/security/role.bicep' = {
+  scope: rg
+  name: 'ai-search-index-data-contributor'
+  params: {
+    principalId: machineLearningEndpoint.outputs.principalId
+    roleDefinitionId: '8ebe5a00-799e-43f5-93ac-243d3dce84a7' //Search Index Data Contributor
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module userAiSearchServiceContributor 'core/security/role.bicep' = if (!empty(principalId)) {
+  scope: rg
+  name: 'user-ai-search-service-contributor'
+  params: {
+    principalId: principalId
+    roleDefinitionId: '7ca78c08-252a-4471-8644-bb5ff32d4ba0' //Search Service Contributor
+    principalType: principalType
+  }
+}
+
+module aiSearchServiceContributor 'core/security/role.bicep' = {
+  scope: rg
+  name: 'ai-search-service-contributor'
+  params: {
+    principalId: machineLearningEndpoint.outputs.principalId
+    roleDefinitionId: '7ca78c08-252a-4471-8644-bb5ff32d4ba0' //Search Service Contributor
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module userCosmosAccountRole 'core/security/role-cosmos.bicep' = if (!empty(principalId)) {
+  scope: rg
+  name: 'user-cosmos-account-role'
+  params: {
+    principalId: principalId
+    databaseAccountId: cosmos.outputs.accountId
+    databaseAccountName: cosmos.outputs.accountName
+  }
+}
+
+module cosmosAccountRole 'core/security/role-cosmos.bicep' = {
+  scope: rg
+  name: 'cosmos-account-role'
+  params: {
+    principalId: machineLearningEndpoint.outputs.principalId
+    databaseAccountId: cosmos.outputs.accountId
+    databaseAccountName: cosmos.outputs.accountName
+  }
+}
+
 
 // output the names of the resources
 output AZURE_TENANT_ID string = tenant().tenantId
