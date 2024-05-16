@@ -58,7 +58,7 @@ jobs:
           inlineScript: |
             az account set --subscription ${{env.AZURE_SUBSCRIPTION_ID}}
 
-      - name: evaluate chat data using the eval sdk
+      - name: evaluate chat data
         working-directory: ./evaluations
         run: |
           python evaluations_chat_custom.py
