@@ -6,7 +6,9 @@ from promptflow.core import AzureOpenAIModelConfiguration
 from promptflow.evals.evaluators import RelevanceEvaluator, GroundednessEvaluator, FluencyEvaluator, CoherenceEvaluator
 from promptflow.evals.evaluate import evaluate
 
-sys.path.append('../contoso_chat')
+# Add the contoso_chat directory to the sys.path
+sys.path.append(os.path.abspath('../contoso_chat'))
+print(sys.path)
 from chat_request import get_response
 
 if __name__ == '__main__':
