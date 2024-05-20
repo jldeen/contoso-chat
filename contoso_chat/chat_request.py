@@ -10,6 +10,7 @@ from promptflow.tools.common import init_azure_openai_client
 from promptflow.connections import AzureOpenAIConnection
 from promptflow.core import (AzureOpenAIModelConfiguration, Prompty, tool)
 
+# get customer from CosmosDB
 def get_customer(customerId: str) -> str:
     try:
         url = os.environ["COSMOS_ENDPOINT"]
